@@ -30,12 +30,12 @@
         android:ems="10"
         android:hint="@string/main.hint.percentage"
         android:layout_below="@id/inputBill"
-        android:layout_alignBottom="@id/btnIncrease"
+        android:layout_alignBottom="@+id/btnIncrease"
         android:layout_toStartOf="@+id/btnIncrease"
         android:layout_toLeftOf="@id/btnIncrease"/>
 
     <Button
-        style="=?android:attr/buttonStyleSmall"
+        style="?android:attr/buttonStyleSmall"
         android:id="@+id/btnIncrease"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -46,6 +46,7 @@
 
         />
     <Button
+        style="?android:attr/buttonStyleSmall"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/main.button.decrease"
