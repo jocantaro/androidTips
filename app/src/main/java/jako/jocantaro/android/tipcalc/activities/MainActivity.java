@@ -1,4 +1,4 @@
-package jako.jocantaro.android.tipcalc;
+package jako.jocantaro.android.tipcalc.activities;
 
 import android.content.Context;
 import android.content.Intent;
@@ -15,9 +15,20 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.gms.appindexing.Action;
+import com.google.android.gms.appindexing.AppIndex;
+import com.google.android.gms.common.api.GoogleApiClient;
+
+import java.util.Date;
+
 import butterknife.Bind;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
+import jako.jocantaro.android.tipcalc.R;
+import jako.jocantaro.android.tipcalc.TipCalcApp;
+import jako.jocantaro.android.tipcalc.fragments.TipHistoryListFragment;
+import jako.jocantaro.android.tipcalc.fragments.TipHistoryListFragmentListener;
+import jako.jocantaro.android.tipcalc.models.TipRecord;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -34,8 +45,15 @@ public class MainActivity extends AppCompatActivity {
     @Bind(R.id.txtTip)
     TextView txtTip;
 
+    private TipHistoryListFragmentListener fragmentListener;
+
     private final static int TIP_STEP_CHANGE = 1;
     private final static int DEFAULT_TIP_PERCENTAGE = 10;
+    /**
+     * ATTENTION: This was auto-generated to implement the App Indexing API.
+     * See https://g.co/AppIndexing/AndroidStudio for more information.
+     */
+    private GoogleApiClient client;
 
 
     @Override
@@ -43,6 +61,16 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
+
+        TipHistoryListFragment fragment = (TipHistoryListFragment) getSupportFragmentManager().findFragmentById(R.id.fragmentList);
+
+        fragment.setRetainInstance(true);
+
+        fragmentListener = (TipHistoryListFragmentListener) fragment;
+
+        // ATTENTION: This was auto-generated to implement the App Indexing API.
+        // See https://g.co/AppIndexing/AndroidStudio for more information.
+        client = new GoogleApiClient.Builder(this).addApi(AppIndex.API).build();
     }
 
     @Override
@@ -65,47 +93,55 @@ public class MainActivity extends AppCompatActivity {
 
 
     @OnClick(R.id.btnSubmit)
-    public void handleClickSubmit (){
+    public void handleClickSubmit() {
 
 
         String strInputTotal = inputBill.getText().toString().trim();
 
-        if (!strInputTotal.isEmpty()){
+        if (!strInputTotal.isEmpty()) {
             double total = Double.parseDouble(strInputTotal);
             int tipPercentage = getTipPercentage();
 
-            double tip = total * (tipPercentage/100d);
+            TipRecord tipRecord = new TipRecord();
 
-            String strTip = String.format(getString(R.string.global_message_tip),tip);
+            tipRecord.setBill(total);
+            tipRecord.setTipPercentage(tipPercentage);
+            tipRecord.setTimestamp(new Date());
+
+
+            String strTip = String.format(getString(R.string.global_message_tip), tipRecord.getTip());
+
+            fragmentListener.addToList(tipRecord);
 
             txtTip.setVisibility(View.VISIBLE);
             txtTip.setText(strTip);
 
         }
+        hideKeyboard();
     }
 
     @OnClick(R.id.btnIncrease)
-        public void handleBtnIncrease (){
+    public void handleBtnIncrease() {
 
-        int newTipPercentage = getTipPercentage() +1;
+        int newTipPercentage = getTipPercentage() + 1;
         inputPercentage.setText(String.valueOf(newTipPercentage));
 
     }
 
 
     @OnClick(R.id.btnDecrease)
-    public void handleBtnDecrease(){
-        int newTipPercentage = getTipPercentage() -1;
+    public void handleBtnDecrease() {
+        int newTipPercentage = getTipPercentage() - 1;
         inputPercentage.setText(String.valueOf(newTipPercentage));
     }
 
 
-    public void handleTipChange(int change){
+    public void handleTipChange(int change) {
 
         int currentTipPercentage = getTipPercentage();
         int newTipPercentage = currentTipPercentage + change;
 
-        if (newTipPercentage > 0 ){
+        if (newTipPercentage > 0) {
             inputPercentage.setText(newTipPercentage);
         }
     }
@@ -116,7 +152,7 @@ public class MainActivity extends AppCompatActivity {
         int currentTipPercentage = DEFAULT_TIP_PERCENTAGE;
         String newTipPercentage = inputPercentage.getText().toString().trim();
 
-        if (!newTipPercentage.isEmpty()){
+        if (!newTipPercentage.isEmpty()) {
             currentTipPercentage = Integer.parseInt(newTipPercentage);
         } else {
             inputPercentage.setText(String.valueOf(currentTipPercentage));
@@ -139,17 +175,18 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    private void hideKeyboard () {
+    private void hideKeyboard() {
 
 
         InputMethodManager inputManager = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
 
         try {
-            inputManager.hideSoftInputFromWindow(getCurrentFocus().getWindowToken(),InputMethodManager.HIDE_NOT_ALWAYS);
+            inputManager.hideSoftInputFromWindow(getCurrentFocus().getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);
 
-        } catch (NullPointerException npe){
-            Log.e (getLocalClassName() , Log.getStackTraceString(npe));
+        } catch (NullPointerException npe) {
+            Log.e(getLocalClassName(), Log.getStackTraceString(npe));
         }
 
     }
+
 }
